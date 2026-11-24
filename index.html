@@ -1,0 +1,96 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visit Counter</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b1020;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.card {
+    background: #151e35;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    border: 1px solid #293958;
+}
+
+h1 {
+    color: #60a5fa;
+}
+
+.counter {
+    font-size: 75px;
+    font-weight: bold;
+    margin: 25px 0;
+}
+
+button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2563eb;
+}
+
+#message {
+    margin-top: 20px;
+    color: #4ade80;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>VISIT COUNTER</h1>
+    <p>ОБЩЕЕ КОЛИЧЕСТВО ПОСЕЩЕНИЙ</p>
+
+    <div class="counter" id="counter">0</div>
+
+    <button id="visitButton">Я посетил сайт!</button>
+
+    <p id="message"></p>
+</div>
+
+<script>
+let visits = Number(localStorage.getItem("visits")) || 0;
+
+document.getElementById("counter").textContent = visits;
+
+document.getElementById("visitButton").addEventListener("click", function() {
+    visits++;
+
+    localStorage.setItem("visits", visits);
+
+    document.getElementById("counter").textContent = visits;
+    document.getElementById("message").textContent = "Спасибо за посещение!";
+});
+</script>
+
+</body>
+</html>
+```
