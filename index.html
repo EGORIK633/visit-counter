@@ -1,96 +1,130 @@
-```html
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visit Counter</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Общий счётчик посещений</title>
 
-<style>
-* {
-    box-sizing: border-box;
-}
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b1020;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
+    .container {
+      padding: 30px;
+    }
 
-.card {
-    background: #151e35;
-    padding: 40px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 420px;
-    text-align: center;
-    border: 1px solid #293958;
-}
+    h1 {
+      font-size: 30px;
+      color: #222;
+    }
 
-h1 {
-    color: #60a5fa;
-}
+    #counter {
+      font-size: 90px;
+      font-weight: bold;
+      color: #2563eb;
+      margin: 25px 0;
+    }
 
-.counter {
-    font-size: 75px;
-    font-weight: bold;
-    margin: 25px 0;
-}
+    button {
+      padding: 18px 30px;
+      border: none;
+      border-radius: 12px;
+      background: #2563eb;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
 
-button {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    border-radius: 12px;
-    font-size: 17px;
-    cursor: pointer;
-}
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
 
-button:hover {
-    background: #2563eb;
-}
-
-#message {
-    margin-top: 20px;
-    color: #4ade80;
-}
-</style>
+    #status {
+      color: #777;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="card">
-    <h1>VISIT COUNTER</h1>
-    <p>ОБЩЕЕ КОЛИЧЕСТВО ПОСЕЩЕНИЙ</p>
-
-    <div class="counter" id="counter">0</div>
-
+  <div class="container">
+    <h1>Посетили сайт</h1>
+    <div id="counter">0</div>
     <button id="visitButton">Я посетил сайт!</button>
+    <p id="status">Загрузка счётчика...</p>
+  </div>
 
-    <p id="message"></p>
-</div>
+  <script>
+    const KEY = "playzone_shared_visits_2026";
+    const API = "https://countapi.mileshilliard.com/api/v1";
 
-<script>
-let visits = Number(localStorage.getItem("visits")) || 0;
+    const counter = document.getElementById("counter");
+    const button = document.getElementById("visitButton");
+    const status = document.getElementById("status");
 
-document.getElementById("counter").textContent = visits;
+    const alreadyVisited =
+      localStorage.getItem("playzone_already_visited") === "yes";
 
-document.getElementById("visitButton").addEventListener("click", function() {
-    visits++;
+    if (alreadyVisited) {
+      button.disabled = true;
+      button.textContent = "Ты уже посетил сайт!";
+      status.textContent = "Спасибо за посещение!";
+    }
 
-    localStorage.setItem("visits", visits);
+    async function updateCounter() {
+      try {
+        const response = await fetch(
+          `${API}/get/${KEY}`,
+          { cache: "no-store" }
+        );
 
-    document.getElementById("counter").textContent = visits;
-    document.getElementById("message").textContent = "Спасибо за посещение!";
-});
-</script>
+        if (!response.ok) throw new Error();
 
+        const data = await response.json();
+        counter.textContent = data.value;
+      } catch {
+        status.textContent = "Не удалось загрузить счётчик";
+      }
+    }
+
+    button.addEventListener("click", async () => {
+      if (localStorage.getItem("playzone_already_visited") === "yes") {
+        return;
+      }
+
+      button.disabled = true;
+      status.textContent = "Засчитываем посещение...";
+
+      try {
+        const response = await fetch(`${API}/hit/${KEY}`);
+
+        if (!response.ok) throw new Error();
+
+        const data = await response.json();
+
+        localStorage.setItem("playzone_already_visited", "yes");
+
+        counter.textContent = data.value;
+        button.textContent = "Ты уже посетил сайт!";
+        status.textContent = "Спасибо за посещение!";
+      } catch {
+        button.disabled = false;
+        status.textContent = "Ошибка! Попробуй ещё раз.";
+      }
+    });
+
+    updateCounter();
+    setInterval(updateCounter, 5000);
+  </script>
 </body>
 </html>
-```
